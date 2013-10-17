@@ -29,20 +29,20 @@ import javax.swing.JButton;
 public class DisplayResults extends JFrame {
 
    //Strings for driver, DB URL, and clients query
-   public String JDBC_DRIVER;
-   public String DATABASE_URL;
-   public String USER_QUERY;
+   private String JDBC_DRIVER;
+   private String DATABASE_URL;
    
    //*** THIS CAN BE MODIFIED BY THE CLIENT TO ADD MORE DRIVERS / DATABASES ***
    private String[] drivers = {"com.mysql.jdbc.Driver"};
    private String[] databases = {"jdbc:mysql://localhost:3306/prog3"};
    
+   //Command frmo user and the number of rows affected (if not "SELECT")
    private String command = "";
    private int rowsAffected;
    
    //Declare all of the Swing objects 
-   private Font font;
-   private Font italicFont;
+   private Font font; //Temp font object
+   private Font italicFont; //Simply for the headers
    private JPanel informationPanel = new JPanel();
    private JPanel buttonPanel = new JPanel();
    private JPanel topPanel = new JPanel();
@@ -77,15 +77,17 @@ public class DisplayResults extends JFrame {
 	  //Layout all GUI components
       super("Stark's Database Client");
       
-      setLayout(new GridLayout(2,1)); //Main frame has two main sections (top and bottom row)
+      //Main frame has two main sections (top and bottom row)
+      setLayout(new GridLayout(2,1));
 
-      topPanel.setLayout(new GridLayout(1,2, 30, 30));
-      bottomPanel.setLayout(new BorderLayout(10,10));
-      leftPanel.setLayout(new BorderLayout(10,10));
-      rightPanel.setLayout(new BorderLayout(10, 10));
-      informationPanel.setLayout(new GridLayout(4,2,6,6));
-      buttonPanel.setLayout(new GridLayout(1,3, 5, 5));
+      topPanel.setLayout(new GridLayout(1,2, 30, 30)); //Top half container
+      bottomPanel.setLayout(new BorderLayout(10,10)); //Bottom half container
+      leftPanel.setLayout(new BorderLayout(10,10)); //Container for informationPanel
+      rightPanel.setLayout(new BorderLayout(10, 10)); //Container for buttonPanel
+      informationPanel.setLayout(new GridLayout(4,2,6,6)); //Container for dropboxes
+      buttonPanel.setLayout(new GridLayout(1,3, 5, 5)); //Container for button objects
           
+      //ADd some styling for the textarea - and ensure text doesn't extend on forever
       queryArea.setBorder(BorderFactory.createLineBorder(Color.BLACK));
       queryArea.setLineWrap(true);
       
@@ -148,13 +150,13 @@ public class DisplayResults extends JFrame {
       driverList.addActionListener(new ActionListener() {
     	  public void actionPerformed(java.awt.event.ActionEvent evt){
     		  JDBC_DRIVER = (String)driverList.getSelectedItem();
-    	  }});                                
+    	  }}); //end driverList.addActionListener                          
       
       //Select Database URL from list
       databaseURLList.addActionListener(new ActionListener() {   
     	  public void actionPerformed(ActionEvent evt){
     		  DATABASE_URL = (String)databaseURLList.getSelectedItem();
-    	  }});
+    	  }}); //end databaseURLList.addActionListener
       
       //actionListener for connectButton to connect to the database
       connect.addActionListener(new ActionListener() {    
@@ -192,31 +194,24 @@ public class DisplayResults extends JFrame {
     		  if (command.substring(0,6).equals("select")){
     			  try{
     				  tableModel.setQuery(command);
-    				  createTable();
+    				  createTable(); //Initialize the table
     			  } //try end
     			  catch (SQLException sqlException){
     				  JOptionPane.showMessageDialog(null, sqlException.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
     				  //ensure database connection is closed
-    				  tableModel.disconnectFromDatabase();
-    				  System.exit(1); //terminate application
     			  } //end catch
     		  	}//end if
     		  
     		  if (command.substring(0,6).equals("update") || command.substring(0,6).equals("delete") || command.substring(0,6).equals("insert")){
     			  try{
     				  rowsAffected = tableModel.setUpdate(command);
-    				  
-    				  
-    				  
+    				  JOptionPane.showMessageDialog(null, command.substring(0,6) + " command successful. Rows affected = " + rowsAffected);
     			  } //try end
     			  catch (SQLException sqlException){
     				  JOptionPane.showMessageDialog(null, sqlException.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
     				  //ensure database connection is closed
-    				  tableModel.disconnectFromDatabase();
-    				  System.exit(1); //terminate application
     			  } //end catch
-    			  
-    		  }  
+    		  }//end if
 	  		}}); //end execute.addActionListener                                         
 
       //actionListener to clear the results table after SQL command execution
@@ -238,8 +233,9 @@ public class DisplayResults extends JFrame {
 	   resultsPane.getViewport().add(resultTable);
        } //createTable end
    
-   //main trigger
+   //main trigger - let's get this ball rollin'!
    public static void main( String args[] ){  
+	 //DisplayResults extends JFrame - so go ahead and initialize the main GUI frame
      DisplayResults ResultsWindow = new DisplayResults();    
      ResultsWindow.setSize(900,300);
      ResultsWindow.setDefaultCloseOperation(EXIT_ON_CLOSE);
